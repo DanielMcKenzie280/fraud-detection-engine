@@ -1,19 +1,29 @@
 from fastapi import FastAPI
-from app.models import AnalysisRequest, AnalysisResponse
-from app.engine import analyze_user_risk
+
+from app.engine import evaluate_event
+from app.models import FraudDetectionResult, FraudEvent
 
 app = FastAPI(
     title="Fraud Detection Engine",
-    version="1.0.0",
-    description="Rule-based fraud detection engine for online platforms."
+    description="Rule-based fraud detection API for suspicious transaction and player activity analysis.",
+    version="1.1.0",
 )
 
 
 @app.get("/")
-def root() -> dict[str, str]:
+def root() -> dict:
     return {"message": "Fraud Detection Engine API is running"}
 
 
-@app.post("/analyze", response_model=AnalysisResponse)
-def analyze(request: AnalysisRequest) -> AnalysisResponse:
-    return analyze_user_risk(request)
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.post(
+    "/detect",
+    response_model=FraudDetectionResult,
+    summary="Analyze player activity and detect fraud risk",
+)
+def detect_fraud(event: FraudEvent) -> FraudDetectionResult:
+    return evaluate_event(event)
